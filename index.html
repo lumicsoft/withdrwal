@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RebirthKey | Admin Batch Payout</title>
+    <title>RebirthKey | Advanced Batch Payout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
@@ -12,113 +12,131 @@
         :root { --gold: #eab308; }
         body { background: #050505; color: white; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; }
         .text-gradient { background: linear-gradient(to right, #facc15, #ca8a04); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .gold-btn { background: linear-gradient(to right, #facc15, #ca8a04); color: black; transition: all 0.3s ease; border-radius: 12px; }
         .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2); }
-        .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; opacity: 0.4; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #ca8a04; border-radius: 10px; }
     </style>
 </head>
-<body>
-
-    <canvas id="bg-canvas"></canvas>
+<body class="pb-20">
 
     <div class="max-w-6xl mx-auto px-6 py-10 relative z-10">
-        <div class="flex justify-between items-center mb-12">
+        <div class="flex justify-between items-center mb-10">
             <div>
-                <h1 class="orbitron text-2xl font-black uppercase tracking-tighter">
-                    Rebirth<span class="text-gradient">Key</span> Admin
-                </h1>
-                <p class="text-gray-500 text-[10px] tracking-widest uppercase mt-1">Batch Withdrawal System v2.0</p>
+                <h1 class="orbitron text-2xl font-black uppercase tracking-tighter">Rebirth<span class="text-gradient">Key</span> PRO</h1>
+                <p class="text-gray-500 text-[10px] tracking-widest uppercase">System v3.0 (History & Analytics)</p>
             </div>
-            <button id="connect-wallet" class="glass px-6 py-2 text-xs font-bold border-yellow-500/20 text-yellow-500">
-                Connect Admin Wallet
+            <button id="connect-wallet" onclick="connect()" class="glass px-6 py-2 text-xs font-bold border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all">
+                Connect Wallet
             </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <div class="lg:col-span-1 space-y-6">
-                <div class="glass p-6 border-l-4 border-yellow-500">
-                    <span class="text-gray-500 text-[10px] font-bold uppercase">Contract Status</span>
-                    <h3 id="contract-bal" class="text-2xl font-black orbitron mt-2">0.00 <span class="text-sm text-yellow-500">USDT</span></h3>
-                    <p class="text-[9px] text-gray-400 mt-1" id="wallet-addr">Not Connected</p>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass p-5 border-l-4 border-yellow-500">
+                <p class="text-[10px] text-gray-500 uppercase font-bold">Contract Bal</p>
+                <h2 id="contract-bal" class="orbitron text-xl font-bold">0.00</h2>
+            </div>
+            <div class="glass p-5 border-l-4 border-blue-500">
+                <p class="text-[10px] text-gray-500 uppercase font-bold">Total Paid Out</p>
+                <h2 id="total-paid" class="orbitron text-xl font-bold text-blue-400">0.00</h2>
+            </div>
+            <div class="glass p-5 border-l-4 border-green-500">
+                <p class="text-[10px] text-gray-500 uppercase font-bold">Total Users Paid</p>
+                <h2 id="total-users" class="orbitron text-xl font-bold text-green-400">0</h2>
+            </div>
+            <div class="glass p-5 border-l-4 border-purple-500">
+                <p class="text-[10px] text-gray-500 uppercase font-bold">Batches Done</p>
+                <h2 id="total-batches" class="orbitron text-xl font-bold text-purple-400">0</h2>
+            </div>
+        </div>
 
-                <div class="glass p-6">
-                    <h4 class="orbitron text-xs font-bold mb-4 uppercase text-gray-400">Quick Actions</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="emergencyWithdraw()" class="bg-red-500/10 text-red-500 text-[10px] font-bold py-3 rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white">Emergency Exit</button>
-                        <button onclick="refreshBalance()" class="glass text-[10px] font-bold py-3 hover:bg-white/5">Refresh Bal</button>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div class="glass p-6 sticky top-10">
+                    <h3 class="orbitron text-sm font-bold mb-4 flex items-center gap-2"><i data-lucide="send" class="w-4 h-4 text-yellow-500"></i> New Payout</h3>
+                    
+                    <div id="upload-zone" class="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:border-yellow-500/40 transition-all cursor-pointer">
+                        <input type="file" id="csv-input" accept=".csv" class="hidden">
+                        <label for="csv-input" class="cursor-pointer">
+                            <i data-lucide="file-up" class="w-8 h-8 mx-auto mb-2 text-gray-500"></i>
+                            <p class="text-xs font-bold uppercase">Upload CSV</p>
+                        </label>
                     </div>
+
+                    <div id="progress-container" class="hidden mt-6">
+                        <div class="flex justify-between text-[9px] mb-1 font-bold text-yellow-500">
+                            <span id="progress-text uppercase">Wait...</span>
+                            <span id="progress-percent">0%</span>
+                        </div>
+                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div id="progress-bar" class="h-full bg-yellow-500 w-0"></div>
+                        </div>
+                    </div>
+
+                    <button id="process-btn" onclick="startExecution()" class="gold-btn w-full mt-6 py-4 font-black text-xs uppercase hidden">Execute Batch</button>
+                    <button onclick="emergencyWithdraw()" class="w-full mt-3 text-[9px] text-red-500 font-bold border border-red-500/20 py-2 rounded-lg hover:bg-red-500/10">Emergency Withdraw</button>
                 </div>
             </div>
 
             <div class="lg:col-span-2">
-                <div class="glass p-8">
-                    <div class="flex justify-between items-center mb-8">
-                        <h2 class="orbitron text-lg font-black italic uppercase">Batch <span class="text-gradient">Processor</span></h2>
-                        <span id="batch-count" class="status-badge bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">0 Batches Loaded</span>
-                    </div>
-
-                    <div id="upload-zone" class="border-2 border-dashed border-white/10 rounded-3xl p-12 text-center hover:border-yellow-500/40 transition-all cursor-pointer">
-                        <input type="file" id="csv-input" accept=".csv" class="hidden">
-                        <label for="csv-input" class="cursor-pointer">
-                            <div class="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="upload-cloud" class="text-yellow-500 w-8 h-8"></i>
-                            </div>
-                            <p class="font-bold text-sm">Upload CSV File</p>
-                            <p class="text-gray-500 text-[10px] mt-2">Format: address, amount (No headers required)</p>
-                        </label>
-                    </div>
-
-                    <div id="progress-container" class="hidden mt-8">
-                        <div class="flex justify-between text-[10px] font-bold mb-2">
-                            <span id="progress-text" class="text-yellow-500">PROCESSING BATCH 1/5...</span>
-                            <span id="progress-percent">0%</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div id="progress-bar" class="h-full bg-yellow-500 w-0 transition-all duration-500"></div>
+                <div class="glass p-6 min-h-[500px]">
+                    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                        <h3 class="orbitron text-sm font-bold uppercase flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4 text-yellow-500"></i> History
+                        </h3>
+                        <div class="flex gap-2">
+                            <input type="date" id="filter-date" onchange="renderHistory()" class="bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-[10px]">
+                            <button onclick="downloadHistory()" class="bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-3 py-1 rounded-lg text-[10px] font-bold hover:bg-yellow-500 hover:text-black">Download CSV</button>
+                            <button onclick="clearHistory()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-1 rounded-lg text-[10px] font-bold">Clear</button>
                         </div>
                     </div>
 
-                    <button id="process-btn" onclick="startExecution()" class="gold-btn w-full mt-8 py-5 font-black text-sm uppercase hidden">
-                        Confirm & Start All Transfers
-                    </button>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px]">
+                            <thead>
+                                <tr class="text-gray-500 uppercase border-b border-white/5">
+                                    <th class="pb-3 px-2">Date/Time</th>
+                                    <th class="pb-3 px-2">TX Hash</th>
+                                    <th class="pb-3 px-2 text-right">Users</th>
+                                    <th class="pb-3 px-2 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
         const CONTRACT_ADDRESS = "0xed10a31e5f6a8830b252e80655435ce0055d2dac"; 
-        const USDT_ADDRESS = "0x3B66b1E08F55AF26c8eA14a73dA64b6bC8D799dE"; // BSC Mainnet USDT
+        const USDT_ADDRESS = "0x3B66b1E08F55AF26c8eA14a73dA64b6bC8D799dE"; // Standard BSC USDT
         const ABI = [
             "function multiWithdraw(address[] calldata _recipients, uint256[] calldata _amounts) external",
-            "function usdt() public view returns (address)",
-            "function owner() public view returns (address)",
             "function emergencyWithdraw() external"
         ];
-        const USDT_ABI = ["function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"];
+        const USDT_ABI = ["function balanceOf(address) view returns (uint256)"];
 
         let batchQueue = [];
         let isProcessing = false;
         let contract, signer;
 
-        // --- CORE LOGIC ---
+        // Load History from LocalStorage
+        let payoutHistory = JSON.parse(localStorage.getItem('rebirth_payout_history') || '[]');
+
         async function connect() {
             if (window.ethereum) {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
                 signer = provider.getSigner();
-                const addr = await signer.getAddress();
-                document.getElementById('wallet-addr').innerText = addr;
-                document.getElementById('connect-wallet').innerText = "Connected";
-                
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+                document.getElementById('connect-wallet').innerText = "Wallet Connected";
                 refreshBalance();
+                renderHistory();
             }
         }
 
@@ -127,7 +145,8 @@
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, provider);
             const bal = await usdtContract.balanceOf(CONTRACT_ADDRESS);
-            document.getElementById('contract-bal').innerHTML = `${ethers.utils.formatUnits(bal, 18)} <span class="text-sm text-yellow-500">USDT</span>`;
+            document.getElementById('contract-bal').innerText = ethers.utils.formatUnits(bal, 18);
+            updateStats();
         }
 
         document.getElementById('csv-input').addEventListener('change', function(e) {
@@ -136,9 +155,7 @@
             reader.onload = function(event) {
                 const text = event.target.result;
                 const rows = text.split('\n').filter(row => row.trim().includes(','));
-                
-                let recipients = [];
-                let amounts = [];
+                let recipients = [], amounts = [];
                 
                 rows.forEach(row => {
                     const [addr, amt] = row.split(',');
@@ -148,70 +165,125 @@
                     }
                 });
 
-                // Auto Chunking: 200 per batch
                 batchQueue = [];
                 const chunkSize = 200;
                 for (let i = 0; i < recipients.length; i += chunkSize) {
-                    batchQueue.push({
-                        r: recipients.slice(i, i + chunkSize),
-                        a: amounts.slice(i, i + chunkSize)
-                    });
+                    batchQueue.push({ r: recipients.slice(i, i + chunkSize), a: amounts.slice(i, i + chunkSize) });
                 }
-
-                document.getElementById('batch-count').innerText = `${batchQueue.length} Batches Ready`;
                 document.getElementById('process-btn').classList.remove('hidden');
-                document.getElementById('upload-zone').classList.add('border-yellow-500/20', 'bg-yellow-500/5');
+                document.getElementById('process-btn').innerText = `Start ${batchQueue.length} Batches`;
             };
             reader.readAsText(file);
         });
 
         async function startExecution() {
-            if (!contract) return alert("Pehle Wallet Connect Karein!");
             if (isProcessing) return;
-
             isProcessing = true;
             document.getElementById('progress-container').classList.remove('hidden');
-            document.getElementById('process-btn').disabled = true;
-            document.getElementById('process-btn').innerText = "DO NOT CLOSE THIS TAB...";
 
             for (let i = 0; i < batchQueue.length; i++) {
                 try {
-                    const currentBatch = i + 1;
-                    const percent = Math.round((currentBatch / batchQueue.length) * 100);
-                    
-                    document.getElementById('progress-text').innerText = `PROCESSING BATCH ${currentBatch}/${batchQueue.length}...`;
-                    document.getElementById('progress-bar').style.width = `${percent}%`;
-                    document.getElementById('progress-percent').innerText = `${percent}%`;
+                    const progress = Math.round(((i+1)/batchQueue.length)*100);
+                    document.getElementById('progress-bar').style.width = progress + '%';
+                    document.getElementById('progress-percent').innerText = progress + '%';
+                    document.getElementById('progress-text').innerText = `BATCH ${i+1}/${batchQueue.length}`;
 
                     const tx = await contract.multiWithdraw(batchQueue[i].r, batchQueue[i].a);
-                    console.log(`Batch ${currentBatch} Sent: ${tx.hash}`);
-                    
-                    await tx.wait(); // Wait for mining
-                    console.log(`Batch ${currentBatch} Confirmed!`);
+                    const receipt = await tx.wait();
+
+                    // Calculate total amount in this batch
+                    let batchSum = batchQueue[i].a.reduce((p, c) => p.add(c), ethers.BigNumber.from(0));
+
+                    // Save to history
+                    const entry = {
+                        date: new Date().toISOString(),
+                        hash: tx.hash,
+                        users: batchQueue[i].r.length,
+                        amount: ethers.utils.formatUnits(batchSum, 18)
+                    };
+                    payoutHistory.unshift(entry);
+                    localStorage.setItem('rebirth_payout_history', JSON.stringify(payoutHistory));
+                    renderHistory();
+
                 } catch (err) {
+                    alert("Error processing batch " + (i+1));
                     console.error(err);
-                    alert(`Error at Batch ${i + 1}. Check Console.`);
                     break;
                 }
             }
-
             isProcessing = false;
-            document.getElementById('process-btn').innerText = "ALL BATCHES COMPLETED";
+            document.getElementById('process-btn').innerText = "All Batches Done";
             refreshBalance();
-            alert("Success! All payments processed.");
+        }
+
+        function renderHistory() {
+            const filterDate = document.getElementById('filter-date').value;
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+
+            let filtered = payoutHistory;
+            if (filterDate) {
+                filtered = payoutHistory.filter(item => item.date.startsWith(filterDate));
+            }
+
+            filtered.forEach(item => {
+                const dateObj = new Date(item.date);
+                tbody.innerHTML += `
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-all">
+                        <td class="py-3 px-2 text-gray-400">${dateObj.toLocaleDateString()} <br> <span class="text-[9px]">${dateObj.toLocaleTimeString()}</span></td>
+                        <td class="py-3 px-2 font-mono text-yellow-500/80"><a href="https://bscscan.com/tx/${item.hash}" target="_blank">${item.hash.substring(0, 10)}...</a></td>
+                        <td class="py-3 px-2 text-right font-bold">${item.users}</td>
+                        <td class="py-3 px-2 text-right text-green-400 font-bold">${item.amount} USDT</td>
+                    </tr>
+                `;
+            });
+            updateStats();
+        }
+
+        function updateStats() {
+            let totalAmt = 0;
+            let totalUsers = 0;
+            payoutHistory.forEach(item => {
+                totalAmt += parseFloat(item.amount);
+                totalUsers += item.users;
+            });
+            document.getElementById('total-paid').innerText = totalAmt.toFixed(2);
+            document.getElementById('total-users').innerText = totalUsers;
+            document.getElementById('total-batches').innerText = payoutHistory.length;
+        }
+
+        function downloadHistory() {
+            let csv = "Date,TxHash,Users,Amount\n";
+            payoutHistory.forEach(item => {
+                csv += `${item.date},${item.hash},${item.users},${item.amount}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'payout_history.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function clearHistory() {
+            if(confirm("Saara history data delete kar dein?")) {
+                payoutHistory = [];
+                localStorage.removeItem('rebirth_payout_history');
+                renderHistory();
+            }
         }
 
         async function emergencyWithdraw() {
-            if (!confirm("Contract ka saara fund nikalna chahte hain?")) return;
-            try {
+            if(confirm("Wait! Kya aap contract ka saara balance nikalna chahte hain?")) {
                 const tx = await contract.emergencyWithdraw();
                 await tx.wait();
-                alert("Fund successfully withdrawn to your wallet.");
                 refreshBalance();
-            } catch (err) { alert(err.message); }
+            }
         }
 
-        document.getElementById('connect-wallet').onclick = connect;
         lucide.createIcons();
     </script>
 </body>
