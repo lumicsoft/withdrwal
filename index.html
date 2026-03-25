@@ -3,132 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RebirthKey | Admin Batch Payout</title>
+    <title>Lumic Technologies | Admin Batch Payout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --gold: #eab308; }
-        body { background: #050505; color: white; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        :root { --gold: #facc15; --gold-dark: #ca8a04; }
+        body { background: #020202; color: white; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
-        .text-gradient { background: linear-gradient(to right, #facc15, #ca8a04); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .gold-btn { background: linear-gradient(to right, #facc15, #ca8a04); color: black; transition: all 0.3s ease; border-radius: 12px; }
-        .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(234, 179, 8, 0.2); }
-        .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; opacity: 0.4; }
-        /* Naya Style History ke liye */
-        .history-table th { color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .history-table td { padding: 12px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 28px; transition: all 0.3s ease; }
+        .glass:hover { border-color: rgba(250, 204, 21, 0.2); background: rgba(255, 255, 255, 0.04); }
+        .text-gradient { background: linear-gradient(to right, #facc15, #eab308, #b45309); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gold-btn { background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%); color: black; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 14px; position: relative; overflow: hidden; }
+        .gold-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 30px rgba(234, 179, 8, 0.3); }
+        .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(250, 204, 21, 0.2); }
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; opacity: 0.3; pointer-events: none; }
+        .history-table th { color: #9ca3af; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .history-table td { padding: 16px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
+        .glow-dot { width: 8px; height: 8px; background: #facc15; border-radius: 50%; box-shadow: 0 0 10px #facc15; display: inline-block; margin-right: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #ca8a04; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <canvas id="bg-canvas"></canvas>
 
-    <div class="max-w-6xl mx-auto px-6 py-10 relative z-10">
-        <div class="flex justify-between items-center mb-12">
-            <div>
-                <h1 class="orbitron text-2xl font-black uppercase tracking-tighter">
-                    Rebirth<span class="text-gradient">Key</span> Admin
+    <div class="max-w-7xl mx-auto px-6 py-10 relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
+            <div class="text-center md:text-left">
+                <h1 class="orbitron text-3xl font-black uppercase tracking-tighter flex items-center gap-3">
+                    <span class="p-2 bg-yellow-500 rounded-lg text-black"><i data-lucide="layers"></i></span>
+                    LUMIC <span class="text-gradient">TECHNOLOGIES</span>
                 </h1>
-                <p class="text-gray-500 text-[10px] tracking-widest uppercase mt-1">Batch Withdrawal System v2.0</p>
+                <p class="text-gray-500 text-[10px] tracking-[0.3em] uppercase mt-2 font-bold ml-1">Advanced Blockchain Payout Engine v3.0</p>
             </div>
-            <button id="connect-wallet" class="glass px-6 py-2 text-xs font-bold border-yellow-500/20 text-yellow-500">
-                Connect Admin Wallet
-            </button>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end mr-4">
+                    <span class="text-[9px] text-gray-500 uppercase font-bold">Network Status</span>
+                    <span class="text-[11px] text-green-500 flex items-center font-bold"><span class="glow-dot"></span> BSC Mainnet Connected</span>
+                </div>
+                <button id="connect-wallet" class="glass px-8 py-3 text-xs font-black border-yellow-500/30 text-yellow-500 uppercase tracking-widest hover:bg-yellow-500/10">
+                    Connect Admin
+                </button>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass p-5 border-t border-white/10">
-                <p class="text-[9px] text-gray-500 uppercase font-bold">Lifetime Paid Out</p>
-                <h2 id="total-paid-out" class="orbitron text-xl font-bold text-gradient">0.00 USDT</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+            <div class="glass p-6 border-b-2 border-yellow-500/20">
+                <p class="text-[10px] text-gray-500 uppercase font-black mb-1">Total Payout</p>
+                <h2 id="total-paid-out" class="orbitron text-2xl font-bold text-gradient">0.00</h2>
+                <span class="text-[9px] text-gray-600 font-bold tracking-widest">USDT VOLUME</span>
             </div>
-            <div class="glass p-5 border-t border-white/10">
-                <p class="text-[9px] text-gray-500 uppercase font-bold">Total Users Processed</p>
-                <h2 id="total-users-count" class="orbitron text-xl font-bold">0</h2>
+            <div class="glass p-6 border-b-2 border-yellow-500/20">
+                <p class="text-[10px] text-gray-500 uppercase font-black mb-1">Users Paid</p>
+                <h2 id="total-users-count" class="orbitron text-2xl font-bold">0</h2>
+                <span class="text-[9px] text-gray-600 font-bold tracking-widest">WALLETS REACHED</span>
             </div>
-            <div class="glass p-5 border-t border-white/10">
-                <p class="text-[9px] text-gray-500 uppercase font-bold">Total Batches</p>
-                <h2 id="total-batches-count" class="orbitron text-xl font-bold">0</h2>
+            <div class="glass p-6 border-b-2 border-yellow-500/20">
+                <p class="text-[10px] text-gray-500 uppercase font-black mb-1">Total Batches</p>
+                <h2 id="total-batches-count" class="orbitron text-2xl font-bold">0</h2>
+                <span class="text-[9px] text-gray-600 font-bold tracking-widest">SMART CONTRACT TXS</span>
+            </div>
+            <div class="glass p-6 border-b-2 border-yellow-500/20">
+                <p class="text-[10px] text-gray-500 uppercase font-black mb-1">Contract Balance</p>
+                <h2 id="contract-bal-stat" class="orbitron text-2xl font-bold text-yellow-500">0.00</h2>
+                <span class="text-[9px] text-gray-600 font-bold tracking-widest" id="wallet-addr-short">DISCONNECTED</span>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1 space-y-6">
-                <div class="glass p-6 border-l-4 border-yellow-500">
-                    <span class="text-gray-500 text-[10px] font-bold uppercase">Contract Status</span>
-                    <h3 id="contract-bal" class="text-2xl font-black orbitron mt-2">0.00 <span class="text-sm text-yellow-500">USDT</span></h3>
-                    <p class="text-[9px] text-gray-400 mt-1" id="wallet-addr">Not Connected</p>
+                <div class="glass p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i data-lucide="shield-check" class="w-20 h-20"></i>
+                    </div>
+                    <span class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Live Security Feed</span>
+                    <h3 id="contract-bal" class="text-3xl font-black orbitron mt-3 tracking-tighter">0.00 <span class="text-xs text-gray-500">USDT</span></h3>
+                    <p class="text-[9px] text-gray-500 mt-2 font-mono break-all" id="wallet-addr">Connect wallet to view address</p>
+                    
+                    <div class="mt-8 pt-6 border-t border-white/5 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] text-gray-400 font-bold">GAS PRICE</span>
+                            <span class="text-[10px] text-green-400 font-bold">3.1 Gwei</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] text-gray-400 font-bold">NETWORK LOAD</span>
+                            <span class="text-[10px] text-yellow-500 font-bold">STABLE</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="glass p-6">
-                    <h4 class="orbitron text-xs font-bold mb-4 uppercase text-gray-400">Quick Actions</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="emergencyWithdraw()" class="bg-red-500/10 text-red-500 text-[10px] font-bold py-3 rounded-xl border border-red-500/20 hover:bg-red-500 hover:text-white">Emergency Exit</button>
-                        <button onclick="refreshBalance()" class="glass text-[10px] font-bold py-3 hover:bg-white/5">Refresh Bal</button>
+                <div class="glass p-8">
+                    <h4 class="orbitron text-[10px] font-black mb-6 uppercase tracking-widest text-gray-400">Control Panel</h4>
+                    <div class="grid grid-cols-1 gap-4">
+                        <button onclick="refreshBalance()" class="glass py-4 text-[10px] font-black uppercase hover:bg-white/10 flex items-center justify-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Synchronize Data
+                        </button>
+                        <button onclick="emergencyWithdraw()" class="bg-red-500/10 text-red-500 text-[10px] font-black py-4 rounded-2xl border border-red-500/20 hover:bg-red-500 hover:text-white transition-all uppercase tracking-tighter">
+                            Emergency Asset Recovery
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div class="lg:col-span-2 space-y-8">
-                <div class="glass p-8">
-                    <div class="flex justify-between items-center mb-8">
-                        <h2 class="orbitron text-lg font-black italic uppercase">Batch <span class="text-gradient">Processor</span></h2>
-                        <span id="batch-count" class="status-badge bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">0 Batches Loaded</span>
+                <div class="glass p-10 border-t-4 border-yellow-500/40">
+                    <div class="flex justify-between items-end mb-10">
+                        <div>
+                            <h2 class="orbitron text-xl font-black italic uppercase">System <span class="text-gradient">Processor</span></h2>
+                            <p class="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-widest">Multi-Address Batch Distribution</p>
+                        </div>
+                        <span id="batch-count" class="status-badge bg-yellow-500/5 text-yellow-500 font-black">Ready for input</span>
                     </div>
 
-                    <div id="upload-zone" class="border-2 border-dashed border-white/10 rounded-3xl p-12 text-center hover:border-yellow-500/40 transition-all cursor-pointer">
+                    <div id="upload-zone" class="border-2 border-dashed border-white/5 rounded-[40px] p-16 text-center hover:border-yellow-500/50 transition-all cursor-pointer group bg-black/20">
                         <input type="file" id="csv-input" accept=".csv" class="hidden">
                         <label for="csv-input" class="cursor-pointer">
-                            <div class="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="upload-cloud" class="text-yellow-500 w-8 h-8"></i>
+                            <div class="w-20 h-20 bg-yellow-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl">
+                                <i data-lucide="file-up" class="text-yellow-500 w-10 h-10"></i>
                             </div>
-                            <p class="font-bold text-sm">Upload CSV File</p>
-                            <p class="text-gray-500 text-[10px] mt-2">Format: address, amount (No headers required)</p>
+                            <p class="font-black text-lg uppercase tracking-tight">Deploy Payout List</p>
+                            <p class="text-gray-500 text-[11px] mt-2 font-bold opacity-60">DRAG & DROP CSV OR CLICK TO BROWSE</p>
+                            <div class="mt-4 flex justify-center gap-4">
+                                <span class="text-[9px] bg-white/5 px-3 py-1 rounded-md text-gray-400 uppercase">Address</span>
+                                <span class="text-[9px] bg-white/5 px-3 py-1 rounded-md text-gray-400 uppercase">Amount</span>
+                            </div>
                         </label>
                     </div>
 
-                    <div id="progress-container" class="hidden mt-8">
-                        <div class="flex justify-between text-[10px] font-bold mb-2">
-                            <span id="progress-text" class="text-yellow-500">PROCESSING BATCH 1/5...</span>
-                            <span id="progress-percent">0%</span>
+                    <div id="progress-container" class="hidden mt-10 p-6 bg-white/5 rounded-3xl">
+                        <div class="flex justify-between text-[10px] font-black mb-3">
+                            <span id="progress-text" class="text-yellow-500 uppercase tracking-widest">Initializing Protocol...</span>
+                            <span id="progress-percent" class="orbitron">0%</span>
                         </div>
-                        <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div id="progress-bar" class="h-full bg-yellow-500 w-0 transition-all duration-500"></div>
+                        <div class="w-full h-2 bg-black/40 rounded-full overflow-hidden p-[2px]">
+                            <div id="progress-bar" class="h-full bg-gradient-to-right from-yellow-600 to-yellow-400 w-0 transition-all duration-700 rounded-full shadow-[0_0_15px_rgba(250,204,21,0.5)]"></div>
                         </div>
                     </div>
 
-                    <button id="process-btn" onclick="startExecution()" class="gold-btn w-full mt-8 py-5 font-black text-sm uppercase hidden">
-                        Confirm & Start All Transfers
+                    <button id="process-btn" onclick="startExecution()" class="gold-btn w-full mt-10 py-6 font-black text-sm uppercase tracking-[0.2em] hidden shadow-2xl">
+                        Authorize Global Distribution
                     </button>
                 </div>
 
-                <div class="glass p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="orbitron text-sm font-black uppercase italic"><i data-lucide="history" class="inline w-4 h-4 mr-1"></i> Payout <span class="text-gradient">History</span></h2>
-                        <div class="flex gap-2">
-                            <input type="date" id="filter-date" onchange="renderHistory()" class="bg-black/50 border border-white/10 rounded-lg px-2 py-1 text-[10px]">
-                            <button onclick="downloadHistory()" class="text-yellow-500 text-[10px] font-bold bg-yellow-500/10 px-3 py-1 rounded-lg">CSV</button>
-                            <button onclick="clearHistory()" class="text-red-500 text-[10px] font-bold bg-red-500/10 px-3 py-1 rounded-lg">Clear</button>
+                <div class="glass p-10">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                        <h2 class="orbitron text-sm font-black uppercase italic tracking-widest flex items-center gap-2">
+                            <i data-lucide="clock-rewind" class="text-yellow-500"></i> Payout <span class="text-gradient">Ledger</span>
+                        </h2>
+                        <div class="flex gap-3">
+                            <input type="date" id="filter-date" onchange="renderHistory()" class="bg-black border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold text-yellow-500 outline-none focus:border-yellow-500/50">
+                            <button onclick="downloadHistory()" class="text-yellow-500 text-[10px] font-black bg-yellow-500/10 px-5 py-2 rounded-xl border border-yellow-500/20 hover:bg-yellow-500 hover:text-black">EXPORT</button>
+                            <button onclick="clearHistory()" class="text-red-500 text-[10px] font-black bg-red-500/5 px-5 py-2 rounded-xl border border-red-500/10 hover:bg-red-500 hover:text-white">PURGE</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full history-table">
                             <thead>
                                 <tr>
-                                    <th class="text-left">Date/Time</th>
-                                    <th class="text-left">Transaction Hash</th>
-                                    <th class="text-right">Users</th>
-                                    <th class="text-right">Total Amount</th>
+                                    <th class="text-left">Timestamp</th>
+                                    <th class="text-left">Verification Hash</th>
+                                    <th class="text-right">Recipients</th>
+                                    <th class="text-right">Net Value</th>
+                                    <th class="text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="history-body">
-                                </tbody>
+                            <tbody id="history-body"></tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <footer class="mt-20 py-12 border-t border-white/5 text-center">
+            <h2 class="orbitron text-lg font-black tracking-widest text-gray-700">LUMIC PAYOUT SYSTEMS</h2>
+            <div class="flex justify-center gap-8 mt-6 text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
+                <span class="hover:text-yellow-500 cursor-pointer">Security Protocol</span>
+                <span class="hover:text-yellow-500 cursor-pointer">API Documentation</span>
+                <span class="hover:text-yellow-500 cursor-pointer">Lumic Technologies &copy; 2026</span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="userModal" class="modal">
+        <div class="max-w-3xl mx-auto mt-20 glass p-8 border border-yellow-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[70vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="orbitron text-lg font-bold text-gradient uppercase">Batch Recipient Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-white"><i data-lucide="x-circle"></i></button>
+            </div>
+            <div class="overflow-y-auto pr-4 flex-grow">
+                <table class="w-full text-left">
+                    <thead class="sticky top-0 bg-[#020202]">
+                        <tr class="text-[10px] text-gray-500 uppercase font-black border-b border-white/10">
+                            <th class="py-3">Wallet Address</th>
+                            <th class="py-3 text-right">Amount (USDT)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-body" class="text-xs font-mono"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -136,7 +211,7 @@
     <script>
         // --- CONFIGURATION ---
         const CONTRACT_ADDRESS = "0xed10a31e5f6a8830b252e80655435ce0055d2dac"; 
-        const USDT_ADDRESS = "0x3B66b1E08F55AF26c8eA14a73dA64b6bC8D799dE"; // BSC USDT 
+        const USDT_ADDRESS = "0x55d398326f99059ff775485246999027b3197955"; // Real BSC USDT
         const ABI = [
             "function multiWithdraw(address[] calldata _recipients, uint256[] calldata _amounts) external",
             "function usdt() public view returns (address)",
@@ -148,10 +223,8 @@
         let batchQueue = [];
         let isProcessing = false;
         let contract, signer;
-        // History Storage
-        let payoutHistory = JSON.parse(localStorage.getItem('rebirth_history') || '[]');
+        let payoutHistory = JSON.parse(localStorage.getItem('lumic_history_v2') || '[]');
 
-        // --- CORE LOGIC ---
         async function connect() {
             if (window.ethereum) {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -159,7 +232,9 @@
                 signer = provider.getSigner();
                 const addr = await signer.getAddress();
                 document.getElementById('wallet-addr').innerText = addr;
-                document.getElementById('connect-wallet').innerText = "Connected";
+                document.getElementById('wallet-addr-short').innerText = addr.substring(0,6) + "..." + addr.substring(38);
+                document.getElementById('connect-wallet').innerText = "SYSTEM ACTIVE";
+                document.getElementById('connect-wallet').classList.add('bg-yellow-500/10');
                 
                 contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
                 refreshBalance();
@@ -169,11 +244,15 @@
 
         async function refreshBalance() {
             if (!signer) return;
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, provider);
-            const bal = await usdtContract.balanceOf(CONTRACT_ADDRESS);
-            document.getElementById('contract-bal').innerHTML = `${ethers.utils.formatUnits(bal, 18)} <span class="text-sm text-yellow-500">USDT</span>`;
-            updateStats();
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, provider);
+                const bal = await usdtContract.balanceOf(CONTRACT_ADDRESS);
+                const formatted = ethers.utils.formatUnits(bal, 18);
+                document.getElementById('contract-bal').innerHTML = `${parseFloat(formatted).toFixed(2)} <span class="text-xs text-yellow-500 uppercase ml-2">USDT</span>`;
+                document.getElementById('contract-bal-stat').innerText = parseFloat(formatted).toFixed(2);
+                updateStats();
+            } catch(e) { console.error("Balance fetch error", e); }
         }
 
         document.getElementById('csv-input').addEventListener('change', function(e) {
@@ -199,69 +278,69 @@
                 for (let i = 0; i < recipients.length; i += chunkSize) {
                     batchQueue.push({
                         r: recipients.slice(i, i + chunkSize),
-                        a: amounts.slice(i, i + chunkSize)
+                        a: amounts.slice(i, i + chunkSize),
+                        rawAmounts: amounts.slice(i, i + chunkSize).map(bn => ethers.utils.formatUnits(bn, 18))
                     });
                 }
 
-                document.getElementById('batch-count').innerText = `${batchQueue.length} Batches Ready`;
+                document.getElementById('batch-count').innerText = `${batchQueue.length} BATCHES READY`;
                 document.getElementById('process-btn').classList.remove('hidden');
-                document.getElementById('upload-zone').classList.add('border-yellow-500/20', 'bg-yellow-500/5');
+                document.getElementById('upload-zone').classList.add('border-yellow-500/20', 'bg-yellow-500/10');
             };
             reader.readAsText(file);
         });
 
         async function startExecution() {
-            if (!contract) return alert("Pehle Wallet Connect Karein!");
+            if (!contract) return alert("System Offline: Connect Admin Wallet");
             if (isProcessing) return;
 
             isProcessing = true;
             document.getElementById('progress-container').classList.remove('hidden');
             document.getElementById('process-btn').disabled = true;
-            document.getElementById('process-btn').innerText = "DO NOT CLOSE THIS TAB...";
+            document.getElementById('process-btn').innerText = "PROTOCOL IN PROGRESS...";
 
             for (let i = 0; i < batchQueue.length; i++) {
                 try {
                     const currentBatch = i + 1;
                     const percent = Math.round((currentBatch / batchQueue.length) * 100);
-                    
-                    document.getElementById('progress-text').innerText = `PROCESSING BATCH ${currentBatch}/${batchQueue.length}...`;
+                    document.getElementById('progress-text').innerText = `EXECUTING BATCH ${currentBatch}/${batchQueue.length}`;
                     document.getElementById('progress-bar').style.width = `${percent}%`;
                     document.getElementById('progress-percent').innerText = `${percent}%`;
 
                     const tx = await contract.multiWithdraw(batchQueue[i].r, batchQueue[i].a);
-                    console.log(`Batch ${currentBatch} Sent: ${tx.hash}`);
+                    await tx.wait();
                     
-                    await tx.wait(); // Wait for mining
-                    
-                    // Naya: History mein save karein
                     let totalBatchAmt = batchQueue[i].a.reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
-                    saveHistory(tx.hash, batchQueue[i].r.length, ethers.utils.formatUnits(totalBatchAmt, 18));
                     
-                    console.log(`Batch ${currentBatch} Confirmed!`);
+                    // Detailed User Data save karna
+                    saveHistory(
+                        tx.hash, 
+                        batchQueue[i].r.length, 
+                        ethers.utils.formatUnits(totalBatchAmt, 18),
+                        batchQueue[i].r, // Full addresses
+                        batchQueue[i].rawAmounts // Full amounts
+                    );
                 } catch (err) {
-                    console.error(err);
-                    alert(`Error at Batch ${i + 1}. Check Console.`);
+                    alert(`System Halt: Batch ${i + 1} Failed.`);
                     break;
                 }
             }
 
             isProcessing = false;
-            document.getElementById('process-btn').innerText = "ALL BATCHES COMPLETED";
-            document.getElementById('process-btn').disabled = false;
+            document.getElementById('process-btn').innerText = "DISTRIBUTION COMPLETE";
             refreshBalance();
-            alert("Success! All payments processed.");
         }
 
-        // --- NEW FUNCTIONS FOR HISTORY ---
-        function saveHistory(hash, users, amount) {
+        function saveHistory(hash, usersCount, amount, addresses, amounts) {
             const entry = {
                 date: new Date().toISOString(),
                 hash: hash,
-                users: users,
-                amount: amount
+                usersCount: usersCount,
+                amount: amount,
+                details: addresses.map((addr, idx) => ({ addr, amt: amounts[idx] })) // Ye har user ka data hai
             };
             payoutHistory.unshift(entry);
-            localStorage.setItem('rebirth_history', JSON.stringify(payoutHistory));
+            localStorage.setItem('lumic_history_v2', JSON.stringify(payoutHistory));
             renderHistory();
         }
 
@@ -272,63 +351,110 @@
 
             let filtered = filterDate ? payoutHistory.filter(h => h.date.startsWith(filterDate)) : payoutHistory;
 
-            filtered.forEach(h => {
+            filtered.forEach((h, index) => {
                 const d = new Date(h.date);
                 body.innerHTML += `
-                    <tr>
-                        <td class="text-gray-400 font-bold">${d.toLocaleDateString()}<br><span class="text-[9px] opacity-50">${d.toLocaleTimeString()}</span></td>
-                        <td><a href="https://bscscan.com/tx/${h.hash}" target="_blank" class="text-yellow-500 font-mono opacity-80 hover:opacity-100">${h.hash.substring(0,12)}...</a></td>
-                        <td class="text-right font-bold">${h.users}</td>
-                        <td class="text-right text-green-400 font-bold">${h.amount} USDT</td>
+                    <tr class="hover:bg-white/[0.02] transition-colors">
+                        <td class="text-gray-400 font-bold">${d.toLocaleDateString()}<br><span class="text-[9px] opacity-40">${d.toLocaleTimeString()}</span></td>
+                        <td><a href="https://bscscan.com/tx/${h.hash}" target="_blank" class="text-yellow-500 font-mono opacity-60 hover:opacity-100 transition-all">${h.hash.substring(0,14)}...</a></td>
+                        <td class="text-right font-black text-white">${h.usersCount} <span class="text-[9px] text-gray-500">WALLETS</span></td>
+                        <td class="text-right text-green-400 font-black">${h.amount} USDT</td>
+                        <td class="text-right">
+                            <button onclick="showDetails(${index})" class="text-[9px] font-black bg-white/5 px-3 py-1 rounded-md border border-white/10 hover:bg-yellow-500 hover:text-black transition-all">VIEW USERS</button>
+                        </td>
                     </tr>
                 `;
             });
             updateStats();
         }
 
+        function showDetails(index) {
+            const batch = payoutHistory[index];
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = '';
+            
+            batch.details.forEach(user => {
+                modalBody.innerHTML += `
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td class="py-2 text-gray-300">${user.addr}</td>
+                        <td class="py-2 text-right text-yellow-500 font-bold">${user.amt}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+
         function updateStats() {
-            let totalAmt = 0;
-            let totalUsers = 0;
+            let totalAmt = 0; let totalUsers = 0;
             payoutHistory.forEach(h => {
                 totalAmt += parseFloat(h.amount);
-                totalUsers += h.users;
+                totalUsers += h.usersCount;
             });
-            document.getElementById('total-paid-out').innerText = totalAmt.toFixed(2) + " USDT";
+            document.getElementById('total-paid-out').innerText = totalAmt.toFixed(2);
             document.getElementById('total-users-count').innerText = totalUsers;
             document.getElementById('total-batches-count').innerText = payoutHistory.length;
         }
 
         function downloadHistory() {
-            let csv = "Date,TxHash,Users,Amount\n";
-            payoutHistory.forEach(h => { csv += `${h.date},${h.hash},${h.users},${h.amount}\n`; });
+            let csv = "Date,BatchHash,UserAddress,AmountUSDT\n";
+            payoutHistory.forEach(h => {
+                h.details.forEach(u => {
+                    csv += `${h.date},${h.hash},${u.addr},${u.amt}\n`;
+                });
+            });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'rebirth_payout_history.csv';
+            a.download = 'lumic_detailed_payouts.csv';
             a.click();
         }
 
         function clearHistory() {
-            if(confirm("Saara history data delete karein?")) {
+            if(confirm("Confirm system purge? This will delete all local history.")) {
                 payoutHistory = [];
-                localStorage.removeItem('rebirth_history');
+                localStorage.removeItem('lumic_history_v2');
                 renderHistory();
             }
         }
 
         async function emergencyWithdraw() {
-            if (!confirm("Contract ka saara fund nikalna chahte hain?")) return;
+            if (!confirm("CRITICAL: Withdraw all funds from contract?")) return;
             try {
                 const tx = await contract.emergencyWithdraw();
                 await tx.wait();
-                alert("Fund successfully withdrawn.");
+                alert("Security Protocol: Funds recovered.");
                 refreshBalance();
             } catch (err) { alert(err.message); }
         }
 
         document.getElementById('connect-wallet').onclick = connect;
         lucide.createIcons();
+
+        // Background Particles Effect
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        for(let i=0; i<50; i++) {
+            particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2, d: Math.random()*1});
+        }
+        function draw() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = "#facc15";
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.fill();
+                p.y -= p.d;
+                if(p.y < 0) p.y = canvas.height;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
     </script>
 </body>
 </html>
