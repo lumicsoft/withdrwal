@@ -25,6 +25,8 @@
         .glow-dot { width: 8px; height: 8px; background: #facc15; border-radius: 50%; box-shadow: 0 0 10px #facc15; display: inline-block; margin-right: 8px; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #ca8a04; border-radius: 10px; }
+        .search-input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 8px 16px; color: white; font-size: 10px; width: 100%; outline: none; transition: all 0.3s; }
+        .search-input:focus { border-color: #facc15; background: rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -154,7 +156,8 @@
                         <h2 class="orbitron text-sm font-black uppercase italic tracking-widest flex items-center gap-2">
                             <i data-lucide="clock-rewind" class="text-yellow-500"></i> Payout <span class="text-gradient">Ledger</span>
                         </h2>
-                        <div class="flex gap-3">
+                        <div class="flex flex-wrap justify-end gap-3 flex-grow ml-4">
+                            <input type="text" id="search-ledger" onkeyup="renderHistory()" placeholder="Search Hash or Address..." class="search-input max-w-[200px]">
                             <input type="date" id="filter-date" onchange="renderHistory()" class="bg-black border border-white/10 rounded-xl px-4 py-2 text-[10px] font-bold text-yellow-500 outline-none focus:border-yellow-500/50">
                             <button onclick="downloadHistory()" class="text-yellow-500 text-[10px] font-black bg-yellow-500/10 px-5 py-2 rounded-xl border border-yellow-500/20 hover:bg-yellow-500 hover:text-black">EXPORT</button>
                             <button onclick="clearHistory()" class="text-red-500 text-[10px] font-black bg-red-500/5 px-5 py-2 rounded-xl border border-red-500/10 hover:bg-red-500 hover:text-white">PURGE</button>
@@ -312,13 +315,12 @@
                     
                     let totalBatchAmt = batchQueue[i].a.reduce((a, b) => a.add(b), ethers.BigNumber.from(0));
                     
-                    // Detailed User Data save karna
                     saveHistory(
                         tx.hash, 
                         batchQueue[i].r.length, 
                         ethers.utils.formatUnits(totalBatchAmt, 18),
-                        batchQueue[i].r, // Full addresses
-                        batchQueue[i].rawAmounts // Full amounts
+                        batchQueue[i].r, 
+                        batchQueue[i].rawAmounts 
                     );
                 } catch (err) {
                     alert(`System Halt: Batch ${i + 1} Failed.`);
@@ -337,7 +339,7 @@
                 hash: hash,
                 usersCount: usersCount,
                 amount: amount,
-                details: addresses.map((addr, idx) => ({ addr, amt: amounts[idx] })) // Ye har user ka data hai
+                details: addresses.map((addr, idx) => ({ addr, amt: amounts[idx] }))
             };
             payoutHistory.unshift(entry);
             localStorage.setItem('lumic_history_v2', JSON.stringify(payoutHistory));
@@ -347,11 +349,20 @@
         function renderHistory() {
             const body = document.getElementById('history-body');
             const filterDate = document.getElementById('filter-date').value;
+            const searchTerm = document.getElementById('search-ledger').value.toLowerCase();
             body.innerHTML = '';
 
-            let filtered = filterDate ? payoutHistory.filter(h => h.date.startsWith(filterDate)) : payoutHistory;
+            let filtered = payoutHistory.filter(h => {
+                const matchesDate = filterDate ? h.date.startsWith(filterDate) : true;
+                const matchesSearch = searchTerm ? (
+                    h.hash.toLowerCase().includes(searchTerm) || 
+                    h.details.some(d => d.addr.toLowerCase().includes(searchTerm))
+                ) : true;
+                return matchesDate && matchesSearch;
+            });
 
             filtered.forEach((h, index) => {
+                const originalIndex = payoutHistory.indexOf(h);
                 const d = new Date(h.date);
                 body.innerHTML += `
                     <tr class="hover:bg-white/[0.02] transition-colors">
@@ -360,7 +371,7 @@
                         <td class="text-right font-black text-white">${h.usersCount} <span class="text-[9px] text-gray-500">WALLETS</span></td>
                         <td class="text-right text-green-400 font-black">${h.amount} USDT</td>
                         <td class="text-right">
-                            <button onclick="showDetails(${index})" class="text-[9px] font-black bg-white/5 px-3 py-1 rounded-md border border-white/10 hover:bg-yellow-500 hover:text-black transition-all">VIEW USERS</button>
+                            <button onclick="showDetails(${originalIndex})" class="text-[9px] font-black bg-white/5 px-3 py-1 rounded-md border border-white/10 hover:bg-yellow-500 hover:text-black transition-all">VIEW USERS</button>
                         </td>
                     </tr>
                 `;
